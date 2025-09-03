@@ -1,0 +1,419 @@
+{% extends 'dashboard/base.html' %}
+{% load static %}
+{% block content %}
+
+<!-- Background Image Container -->
+<div class="background-image-container">
+  <div class="container mt-4 overlay-content">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h2 class="mb-0 text-white"><i class="fas fa-seedling text-success"></i> Smart Crop Advisory Wizard</h2>
+        <p class="text-white-50">Get personalized crop recommendations and cultivation guidance</p>
+      </div>
+      <div class="text-end">
+        <form method="POST">
+          {% csrf_token %}
+          <input type="hidden" name="step" value="reset">
+          <button type="submit" class="btn btn-light">
+            <i class="fas fa-sync-alt"></i> Start Over
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="card shadow-sm mb-4 bg-white bg-opacity-90">
+      <div class="card-body">
+        <!-- Progress Steps -->
+        <div class="steps-progress mb-5">
+          <div class="steps">
+            <div class="step {% if selected_crop %}active{% endif %}">
+              <div class="step-icon"><i class="fas fa-leaf"></i></div>
+              <div class="step-label">Crop Selection</div>
+            </div>
+            <div class="step {% if selected_crop %}active{% endif %}">
+              <div class="step-icon"><i class="fas fa-tractor"></i></div>
+              <div class="step-label">Land Prep</div>
+            </div>
+            <div class="step {% if selected_seed %}active{% endif %}">
+              <div class="step-icon"><i class="fas fa-seedling"></i></div>
+              <div class="step-label">Seed Selection</div>
+            </div>
+            <div class="step {% if stage %}active{% endif %}">
+              <div class="step-icon"><i class="fas fa-chart-line"></i></div>
+              <div class="step-label">Dashboard</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 1: Crop Prediction -->
+        {% if not selected_seed %}
+          <div class="step-section mb-5">
+            <h4 class="d-flex align-items-center">
+              <span class="badge bg-success me-3">1</span>
+              Select Recommended Crop
+            </h4>
+            
+            
+            
+            {% if recommended_crops %}
+              <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                  {% for crop in recommended_crops %}
+                    <div class="col-md-3 col-6">
+                      <button type="submit" name="selected_crop" value="{{ crop }}" 
+                              class="btn btn-outline-success w-100 py-3 crop-card">
+                        <i class="fas fa-leaf me-2"></i>
+                        {{ crop|title }}
+                      </button>
+                    </div>
+                  {% endfor %}
+                </div>
+              </form>
+            {% elif selected_crop %}
+              <div class="alert alert-success d-flex align-items-center">
+                <i class="fas fa-check-circle me-2 fs-4"></i>
+                <div>
+                  <strong>Selected Crop:</strong> {{ selected_crop|title }}
+                </div>
+              </div>
+            {% else %}
+              <div class="text-center py-4">
+                <div class="spinner-border text-success" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Analyzing your soil and weather data for crop recommendations...</p>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- STEP 2: Land Preparation -->
+          {% if selected_crop %}
+            <div class="step-section mb-5">
+              <h4 class="d-flex align-items-center">
+                <span class="badge bg-info me-3">2</span>
+                Land Preparation Guide
+              </h4>
+              <div class="alert alert-info d-flex">
+                <i class="fas fa-info-circle me-3 fs-4"></i>
+                <div>{{ preparation_text }}</div>
+              </div>
+            </div>
+          {% endif %}
+
+          <!-- STEP 3: Seed Recommendation -->
+          {% if selected_crop and recommended_seeds %}
+            <div class="step-section">
+              <h4 class="d-flex align-items-center">
+                <span class="badge bg-primary me-3">3</span>
+                Select a Seed Variety
+              </h4>
+              <form method="POST">
+                {% csrf_token %}
+                <div class="row g-3">
+                  {% for seed in recommended_seeds %}
+                    <div class="col-md-3 col-6">
+                      <button type="submit" name="selected_seed" value="{{ seed }}" 
+                              class="btn btn-outline-primary w-100 py-3 seed-card">
+                        <i class="fas fa-seedling me-2"></i>
+                        {{ seed }}
+                      </button>
+                    </div>
+                  {% endfor %}
+                </div>
+              </form>
+            </div>
+          {% elif selected_seed %}
+            <div class="alert alert-primary d-flex align-items-center">
+              <i class="fas fa-check-circle me-2 fs-4"></i>
+              <div>
+                <strong>Selected Seed:</strong> {{ selected_seed }}
+              </div>
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- STEP 4: Fertilizer + Summary Dashboard -->
+    {% if stage %}
+      <div class="card shadow-sm bg-white bg-opacity-90">
+        <div class="card-header bg-light">
+          <h4 class="mb-0"><i class="fas fa-chart-pie text-primary"></i> Crop Summary Dashboard</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <!-- Crop Details Column -->
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                  <h5 class="mb-0"><i class="fas fa-seedling"></i> Crop Details</h5>
+                </div>
+                <div class="card-body">
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-leaf me-2 text-success"></i>Crop</span>
+                      <span class="fw-bold">{{ selected_crop }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-dna me-2 text-success"></i>Seed Variety</span>
+                      <span class="fw-bold">{{ selected_seed }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-calendar-day me-2 text-success"></i>Planted on</span>
+                      <span class="fw-bold">{{ planting_date }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-clock me-2 text-success"></i>Days Since Planting</span>
+                      <span class="fw-bold">{{ days }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-chart-line me-2 text-success"></i>Current Stage</span>
+                      <span class="fw-bold">{{ stage }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Soil/Weather Column -->
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                  <h5 class="mb-0"><i class="fas fa-cloud-sun"></i> Soil & Weather Data</h5>
+                </div>
+                <div class="card-body">
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-water me-2 text-info"></i>pH Level</span>
+                      <span class="fw-bold">{{ sensor_data.ph }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-temperature-high me-2 text-info"></i>Temperature</span>
+                      <span class="fw-bold">{{ sensor_data.temperature }}°C</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-tint me-2 text-info"></i>Humidity</span>
+                      <span class="fw-bold">{{ sensor_data.humidity }}%</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-water me-2 text-info"></i>moisture_numeric</span>
+                      <span class="fw-bold">{{ sensor_data.moisture_numeric }}%</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-mountain me-2 text-info"></i>Altitude</span>
+                      <span class="fw-bold">{{ sensor_data.altitude }} m</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span><i class="fas fa-layer-group me-2 text-info"></i>Soil Type</span>
+                      <span class="fw-bold">{{ soil_type_used }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- NPK/Health Column -->
+            <div class="col-md-4 mb-4">
+              <div class="card h-100">
+                <div class="card-header bg-warning text-dark">
+                  <h5 class="mb-0"><i class="fas fa-flask"></i> NPK Levels & Soil Health</h5>
+                </div>
+                <div class="card-body">
+                  <div class="mb-3">
+                    <h6 class="d-flex align-items-center">
+                      <i class="fas fa-atom me-2"></i>Nutrient Levels
+                    </h6>
+                    <div class="progress mb-2" style="height: 20px;">
+                      <div class="progress-bar bg-danger" style="width: {{ n_percentage }}%">
+                        N {{ sensor_data.n }}
+                      </div>
+                    </div>
+                    <div class="progress mb-2" style="height: 20px;">
+                      <div class="progress-bar bg-primary" style="width: {{ p_percentage }}%">
+                        P {{ sensor_data.p }}
+                      </div>
+                    </div>
+                    <div class="progress mb-3" style="height: 20px;">
+                      <div class="progress-bar bg-success" style="width: {{ k_percentage }}%">
+                        K {{ sensor_data.k }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="mb-3">
+                    <h6 class="d-flex align-items-center">
+                      <i class="fas fa-heartbeat me-2"></i>Soil Health
+                    </h6>
+                    <div class="alert {% if soil_health == 'Healthy' %}alert-success{% else %}alert-danger{% endif %}">
+                      <div class="d-flex align-items-center">
+                        <i class="fas {% if soil_health == 'Healthy' %}fa-check-circle{% else %}fa-exclamation-triangle{% endif %} me-2"></i>
+                        <div>
+                          <strong>Status:</strong> {{ soil_health }}
+                          {% if npk_deficiency %}
+                            <div class="mt-1"><strong>Deficiencies:</strong> {{ npk_deficiency|join:", " }}</div>
+                          {% endif %}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {% if soil_health != 'Healthy' and auto_fertilizers %}
+                    <div>
+                      <h6 class="d-flex align-items-center">
+                        <i class="fas fa-pills me-2"></i>Recommended Fertilizers
+                      </h6>
+                      <div class="list-group">
+                        {% for fert in auto_fertilizers %}
+                          <div class="list-group-item list-group-item-action">
+                            <i class="fas fa-caret-right me-2 text-primary"></i>{{ fert }}
+                          </div>
+                        {% endfor %}
+                      </div>
+                      <form method="POST" class="mt-3">
+                        {% csrf_token %}
+                        <button type="submit" name="get_fertilizer" value="1" class="btn btn-primary w-100">
+                          <i class="fas fa-lightbulb me-2"></i>Get Fertilizer Advice
+                        </button>
+                      </form>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<style>
+  /* Background Image Styles */
+  .background-image-container {
+    background-image: url("{% static 'images/crops/crop2.jpg' %}");
+    background-size: cover;
+    background-position: center center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 20px 0;
+  }
+  
+  .overlay-content {
+    position: relative;
+    z-index: 2;
+  }
+  
+  .background-image-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+  }
+  
+  /* Progress Steps */
+  .steps-progress {
+    position: relative;
+    padding: 0 100px;
+  }
+  .steps {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+  }
+  .steps::before {
+    content: "";
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #e9ecef;
+    z-index: 1;
+  }
+  .step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+  }
+  .step-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    color: #6c757d;
+  }
+  .step.active .step-icon {
+    background: #0d6efd;
+    color: white;
+  }
+  .step-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-align: center;
+  }
+  .step.active .step-label {
+    color: #0d6efd;
+    font-weight: 500;
+  }
+  
+  /* Card styling */
+  .step-section {
+    padding: 20px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    margin-bottom: 25px;
+  }
+  
+  .crop-card, .seed-card {
+    transition: all 0.3s ease;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .crop-card:hover {
+    background: #198754 !important;
+    color: white !important;
+    transform: translateY(-3px);
+  }
+  .seed-card:hover {
+    background: #0d6efd !important;
+    color: white !important;
+    transform: translateY(-3px);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .steps-progress {
+      padding: 0 20px;
+    }
+    .step-label {
+      font-size: 0.7rem;
+    }
+    
+    .background-image-container {
+      background-attachment: scroll;
+    }
+  }
+</style>
+
+<script>
+  // Auto-refresh every 10 minutes
+  setTimeout(function() {
+    window.location.reload();
+  }, 600000);
+</script>
+
+{% endblock %}
