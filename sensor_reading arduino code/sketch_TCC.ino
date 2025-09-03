@@ -6,8 +6,8 @@
 #define WIFI_PASSWORD ""
 
 // Firebase credentials
-#define API_KEY "AIzaSyCOZbSihvaPEuxaWj8jjdNVvXkHu3W07V8"
-#define DATABASE_URL "https://sensor-reading-23f9a-default-rtdb.firebaseio.com/"
+#define API_KEY ""
+#define DATABASE_URL ""
 
 // Firebase and hardware objects
 FirebaseData firebaseData;
