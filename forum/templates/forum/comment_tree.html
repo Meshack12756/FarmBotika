@@ -1,0 +1,57 @@
+{% load static %}
+{% for comment in comments %}
+  <div class="comment">
+    <div class="comment-header">
+      <img src="{% static 'images/farmer-icon.png' %}" alt="Farmer" class="avatar">
+      <div>
+        {% if comment.user %}
+          <strong>{{ comment.user.username }}</strong>
+        {% else %}
+          <strong>{{ comment.author_name|default:"Anonymous" }}</strong>
+        {% endif %}
+        <small>{{ comment.created_at|date:"M j, Y g:i a" }}</small>
+      </div>
+    </div>
+    <div class="comment-body">
+      {{ comment.content }}
+      
+      {% if comment.image %}
+        <div class="comment-image">
+          <img src="{{ comment.image.url }}" alt="Comment image">
+        </div>
+      {% endif %}
+    </div>
+    <a href="#reply-form-{{ comment.id }}" class="reply-btn" 
+       onclick="toggleReply('{{ comment.id }}'); return false;">
+      Reply
+    </a>
+
+    <div id="reply-form-{{ comment.id }}" class="reply-form">
+      <form method="post" action="{% url 'post_comment' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="hidden" name="content_type" value="thread">
+        <input type="hidden" name="object_id" value="{{ thread.id }}">
+        <input type="hidden" name="parent_id" value="{{ comment.id }}">
+        
+        <div class="form-group">
+          <input type="text" name="author_name" 
+                 placeholder="Your name (optional)" class="form-control">
+        </div>
+        <div class="form-group">
+          <textarea name="content" 
+                    placeholder="Write your reply..." 
+                    required class="form-control"></textarea>
+        </div>
+        <button type="submit" class="btn">Submit Reply</button>
+      </form>
+    </div>
+
+    {% with child_comments=comment.get_children %}
+      {% if child_comments %}
+        <div class="nested-comments">
+          {% include "forum/comment_tree.html" with comments=child_comments level=level|add:1 thread=thread %}
+        </div>
+      {% endif %}
+    {% endwith %}
+  </div>
+{% endfor %}

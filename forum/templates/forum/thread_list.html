@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}All Discussions – FarmBotika{% endblock %}
+
+{% block content %}
+  <section class="thread-list">
+    <div class="list-header">
+      <h1>Community Discussions</h1>
+      <img src="{% static 'images/tractor.png' %}" alt="Tractor" class="header-icon">
+    </div>
+    
+    <div class="threads-container">
+      {% for thread in threads %}
+        <a href="{% url 'thread_detail' thread.id %}" class="thread-card">
+          <div class="thread-content">
+            <h3>{{ thread.title }}</h3>
+            <div class="thread-meta">
+              <img src="{% static 'images/farmer-icon.png' %}" alt="Farmer" class="avatar-sm">
+              <div>
+                <span>{{ thread.created_by.username }}</span>
+                <div class="text-muted">{{ thread.created_at|date:"M j, Y" }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="thread-stats">
+            <span>💬 {{ thread.comment_count }}</span>
+          </div>
+        </a>
+      {% empty %}
+        <div class="no-threads">
+          <img src="{% static 'images/empty-field.png' %}" alt="Empty Field" width="80">
+          <p>No discussions yet. Start the first one!</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% endblock %}

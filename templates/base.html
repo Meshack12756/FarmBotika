@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}FarmBotika Community Hub{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Slab:wght@300;400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="farm-header">
+    <div class="header-content">
+      <h1>🌱 FarmBotika Community Hub</h1>
+    <nav>
+      <a href="{% url 'thread_list' %}">Home</a>  
+        <a href="{% url 'admin:index' %}">Admin</a> 
+    </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="farm-footer">
+    <p>&copy; {% now "Y" %} FarmBotika | Cultivating Knowledge, Growing Community</p>
+  </footer>
+</body>
+</html>
